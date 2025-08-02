@@ -20,6 +20,7 @@ class CreateDomainsTable extends Migration
             $table->date('purchase_date')->nullable();
             $table->date('expire_date')->nullable();
             $table->string('project', 128)->nullable();
+            $table->decimal('price', 10, 2)->nullable()->comment('购买价格')->after('registrar');
             $table->tinyInteger('status')->default(1);
             $table->timestamps();
         });

@@ -19,6 +19,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::apiResource('domains', '\App\Http\Controllers\Api\DomainController');
+Route::apiResource('subdomains', '\App\Http\Controllers\Api\SubdomainController');
 Route::apiResource('servers', '\App\Http\Controllers\Api\ServerController');
 Route::apiResource('api-services', '\App\Http\Controllers\Api\ApiServiceController');
 Route::apiResource('accounts', '\App\Http\Controllers\Api\AccountController');

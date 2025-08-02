@@ -5,6 +5,16 @@
       <el-form-item label="关键字">
         <el-input v-model="search.keyword" placeholder="输入域名/业务/注册商" clearable style="width: 200px;" />
       </el-form-item>
+      <el-form-item label="注册商">
+        <el-select v-model="search.registrar" clearable placeholder="全部注册商" style="width: 140px;">
+          <el-option
+              v-for="r in registrarList"
+              :key="r"
+              :label="r"
+              :value="r"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="doSearch">搜索</el-button>
         <el-button @click="resetSearch">重置</el-button>
@@ -35,12 +45,22 @@
       <el-table-column type="selection" width="50" />
       <el-table-column prop="domain" label="域名" min-width="120"/>
       <el-table-column prop="registrar" label="注册商" min-width="100"/>
+      <el-table-column label="生命周期" min-width="170">
+        <template #default="scope">
+          <AssetLifeProgress
+              :purchase-date="scope.row.purchase_date"
+              :expire-date="scope.row.expire_date"
+              :price="scope.row.price"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column prop="price" label="价格(元)" min-width="100" />
       <el-table-column prop="purchase_date" label="购买日期" min-width="100"/>
       <el-table-column prop="expire_date" label="到期日期" min-width="100"/>
       <el-table-column prop="project" label="绑定业务" min-width="120"/>
       <el-table-column label="操作" width="120">
         <template #default="scope">
-          <el-button size="small" @click="goToSubdomainPage(scope.row.domain)">子域名</el-button>
+          <el-button size="small" @click="goToSubdomainPage(scope.row.domain, scope.row.id)">子域名</el-button>
           <el-button size="small" @click="editDomain(scope.row)">编辑</el-button>
         </template>
       </el-table-column>
@@ -64,6 +84,9 @@
         <el-form-item label="注册商">
           <el-input v-model="form.registrar" />
         </el-form-item>
+        <el-form-item label="价格">
+          <el-input v-model="form.price" type="number" placeholder="输入价格" />
+        </el-form-item>
         <el-form-item label="购买时间">
           <el-date-picker v-model="form.purchase_date" type="date" />
         </el-form-item>
@@ -83,10 +106,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCrudApi } from '@/utils/api'
 import { usePagination } from '@/utils/curdTools'
+import dayjs from 'dayjs'
+import AssetLifeProgress from '@/components/AssetLifeProgress.vue'
 import {
   initForm, closeDialog, getList, editRow, save, handleSelectionChange,
   batchDelete, handleCsvUpload, exportCSV
@@ -97,7 +122,7 @@ const domainApi = useCrudApi(API_URL)
 const router = useRouter()
 
 // 基本表单
-const formDefaults = { domain: '', registrar: '', purchase_date: '', expire_date: '', project: '' }
+const formDefaults = { domain: '', registrar: '', price: null, purchase_date: '', expire_date: '', project: '' }
 const form = ref(initForm(formDefaults))
 const editRowId = ref<number | null>(null)
 const dialogVisible = ref(false)
@@ -105,7 +130,7 @@ const dialogVisible = ref(false)
 // 列表相关
 const domains = ref<any[]>([])
 const total = ref(0)
-const search = ref({ keyword: '' })
+const search = ref({ keyword: '', registrar: '' })
 const multipleSelection = ref<any[]>([])
 const tableRef = ref()
 
@@ -118,9 +143,11 @@ const {
   handleCurrentChange
 } = usePagination(getDomains, 20)
 
+const registrarList = computed(() => [...new Set(domains.value.map(d => d.registrar).filter(Boolean))])
+
 // 页面跳转
-function goToSubdomainPage(domain: string) {
-  router.push({ name: 'SubdomainManager', params: { domain } })
+function goToSubdomainPage(domain: string, domainId: number|string) {
+  router.push({ name: 'SubdomainManager', params: { domain, domainId } })
 }
 
 onMounted(getDomains)
@@ -129,6 +156,10 @@ function openDialog() {
   dialogVisible.value = true
   form.value = initForm(formDefaults)
   editRowId.value = null
+  // 关键：如果当前筛选选了注册商，自动填入
+  if (search.value.registrar) {
+    form.value.registrar = search.value.registrar
+  }
 }
 function closeDialogHandler() {
   closeDialog(form, formDefaults, editRowId, dialogVisible)
@@ -137,7 +168,14 @@ function editDomain(row: any) {
   editRow(row, form, editRowId, dialogVisible)
 }
 function saveDomain() {
-  save(domainApi, form, editRowId, closeDialogHandler, getDomains)
+  const payload = {
+    ...form.value,
+    price: form.value.price !== '' && form.value.price != null ? Number(form.value.price) : null,
+    // 日期格式转换，防止后端 SQL 报错
+    purchase_date: form.value.purchase_date ? dayjs(form.value.purchase_date).format('YYYY-MM-DD') : null,
+    expire_date: form.value.expire_date ? dayjs(form.value.expire_date).format('YYYY-MM-DD') : null,
+  }
+  save(domainApi, ref(payload), editRowId, closeDialogHandler, getDomains)
 }
 function handleBatchDelete() {
   batchDelete(domainApi, multipleSelection, getDomains)
@@ -152,6 +190,7 @@ function doSearch() {
 }
 function resetSearch() {
   search.value.keyword = ''
+  search.value.registrar = ''
   page.value = 1
   getDomains()
 }

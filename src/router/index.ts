@@ -9,6 +9,7 @@ import ApiManager from '@/views/ApiManager.vue'
 import AccountManager from '@/views/AccountManager.vue'
 import BusinessAnalytics from '@/views/BusinessAnalytics.vue'
 import LogAlertManager from '@/views/LogAlertManager.vue'
+import ServerDetail from '@/views/ServerDetail.vue'
 
 const routes = [
     { path: '/', name: 'Dashboard', component: Dashboard },
@@ -22,10 +23,16 @@ const routes = [
     { path: '/servers', name: 'Servers', component: ServerManager },
     { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound },
     {
-        path: '/domains/:domain/subdomains',
+        path: '/subdomain/:domain/:domainId',
         name: 'SubdomainManager',
         component: SubdomainManager,
         props: true
+    },
+    {
+        path: '/servers/:id',
+        name: 'ServerDetail',
+        component: ServerDetail, // 详情页面
+        props: true // 让id自动作为props传递
     },
 ]
 

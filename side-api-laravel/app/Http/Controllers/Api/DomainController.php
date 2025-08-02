@@ -17,6 +17,9 @@ class DomainController extends Controller
                     ->orWhere('domain', 'like', '%' . $request->keyword . '%')
                     ->orWhere('project', 'like', '%' . $request->keyword . '%');
                 }
+        if ($registrar = $request->input('registrar')) {
+            $query->where('registrar', $registrar);
+        }
         $list = $query->orderByDesc('id')->paginate(20);
         return response()->json($list);
     }

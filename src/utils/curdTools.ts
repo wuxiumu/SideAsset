@@ -17,7 +17,8 @@ export async function getList(api: any, page: any, pageSize: any, search: any, d
     const res = await api.list({
         page: page.value,
         per_page: pageSize.value,
-        keyword: search.value.keyword || undefined
+        ...search.value // 这里 search.registrar 一定传了
+
     })
     data.value = res.data
     total.value = res.total

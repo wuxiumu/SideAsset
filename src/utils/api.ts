@@ -5,7 +5,10 @@ export function useCrudApi(base: string) {
         // 分页列表，支持 params 可扩展
         list: (params?: any) =>
             axios.get(`${base}`, { params }).then(res => res.data),
-        // 详情
+        // 详情（推荐统一命名为 show）
+        show: (id: string | number) =>
+            axios.get(`${base}/${id}`).then(res => res.data),
+        // 兼容旧写法
         detail: (id: string | number) =>
             axios.get(`${base}/${id}`).then(res => res.data),
         // 新增
@@ -17,7 +20,7 @@ export function useCrudApi(base: string) {
         // 删除
         remove: (id: string | number) =>
             axios.delete(`${base}/${id}`).then(res => res.data),
-        // 批量删除（批量 API 路径格式需与后端统一）
+        // 批量删除
         batchRemove: (ids: any[]) =>
             axios.delete(`${base}/${ids.join(',')}`).then(res => res.data),
     }
