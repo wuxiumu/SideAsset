@@ -22,6 +22,23 @@ php -S 0.0.0.0:8000 -t side-api-laravel/public
 
 <img src="https://img20.360buyimg.com/openfeedback/jfs/t1/310884/23/19717/214946/6886d52aF3520c3a3/a7a7639ffe480a59.png">
 
+
+## 环境变量
+
+- 根目录：复制 `.env.example`（前端 `VITE_API_BASE` 备忘）
+- 后端：`cp side-api-laravel/.env.example side-api-laravel/.env` 后 `php artisan key:generate`（需 MySQL）
+
+一键开发也可：`./easy.sh`（Node 20 + Laravel 内置服务器 + `npm run dev`）。
+
+## 冒烟自检
+
+```bash
+bash scripts/smoke.sh
+# 或 npm run smoke
+```
+
+无 MySQL 也会做结构检查 + 前端 `vite build`。
+
 ## SEO 字段预留（产品页 HTML 统一生成时用）
 
 | 字段 | 用途 |

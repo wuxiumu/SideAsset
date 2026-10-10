@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# secrets / deps
+.env
+.env.*
+!.env.example
+side-api-laravel/.env
+side-api-laravel/vendor/
+side-api-laravel/node_modules/
+vendor/
